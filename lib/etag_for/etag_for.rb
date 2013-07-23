@@ -7,7 +7,7 @@ module EtagFor
 
     files = []
     files << "layouts/#{options[:layout]}" if options[:layout]
-    files << options[:view] if options[:view]
+    files << "views/#{options[:view]}" if options[:view]
     files += options[:files] if options[:files]
 
     [ item_or_items ].flatten + [ css_path(css_file), js_path(js_file) ] + digests_of(files)
@@ -15,8 +15,11 @@ module EtagFor
 
 protected
   def digests_of(file_list)
-    file_list.map do |file| 
-      Digest::MD5.hexdigest(File.read("#{Rails.root}/app/views/#{file}"))
+    file_list.map do |file|
+      logger.debug "file = #{file}"
+      view_full_path = "#{Rails.root}/app/views/#{file}"
+      view_full_path = "#{view_paths.first}/#{file.sub(/^views\//, '')}" if file[/^views\//]
+      Digest::MD5.hexdigest(File.read(view_full_path))
     end
   end
 
